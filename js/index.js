@@ -26,6 +26,8 @@ const fruitItemColors = {
 // элементы в DOM можно получить при помощи функции querySelector
 const fruitsList = document.querySelector('.fruits__list'); // список карточек
 const shuffleButton = document.querySelector('.shuffle__btn'); // кнопка перемешивания
+const minWeightInput = document.querySelector('.minweight__input'); // поле с названием вида
+const maxWeightInput = document.querySelector('.maxweight__input'); // поле с названием вида
 const filterButton = document.querySelector('.filter__btn'); // кнопка фильтрации
 const sortKindLabel = document.querySelector('.sort__kind'); // поле с названием сортировки
 const sortTimeLabel = document.querySelector('.sort__time'); // поле с временем сортировки
@@ -108,14 +110,19 @@ shuffleButton.addEventListener('click', () => {
 
 // фильтрация массива
 const filterFruits = () => {
-  fruits.filter((item) => {
-    // TODO: допишите функцию
+  const [min, max] = [
+    parseInt(minWeightInput.value) || 0,
+    parseInt(maxWeightInput.value) || Infinity
+  ];
+
+  const result = fruits.filter((item) => {
+    return (item.weight >= min) && (item.weight <= max);
   });
+  return result;
 };
 
 filterButton.addEventListener('click', () => {
-  const link = filterFruits();
-  display(link);
+  display(filterFruits());
 });
 
 /*** СОРТИРОВКА ***/
@@ -139,12 +146,11 @@ const colorDict = new Map([
 )
 
 function getColorPriority(colorName) {
-  
-  if (!colorDict.has(colorName))
-  {
+
+  if (!colorDict.has(colorName)) {
     //colorDictAddNew();
   }
-  
+
   const hsb = colorDict.get(colorName);
 
   // Сдвигаем спектр на 45 грудаусов, чтобы оттенки красного 
@@ -168,7 +174,7 @@ function testPriority() {
   });
 }
 
-testPriority();
+//testPriority();
 
 const comparationColor = (a, b) => {
   // TODO: допишите функцию сравнения двух элементов по цвету
