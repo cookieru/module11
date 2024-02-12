@@ -73,7 +73,7 @@ function createFruitItem(fruit, index = 0) {
 }
 
 // Первое отображение 
-display();
+display(fruits);
 
 /*** ПЕРЕМЕШИВАНИЕ ***/
 
@@ -103,9 +103,6 @@ shuffleButton.addEventListener('click', () => {
   shuffleFruits();
   display(fruits);
 });
-
-// Первое отображение 
-display(fruits);
 
 /*** ФИЛЬТРАЦИЯ ***/
 
@@ -145,10 +142,10 @@ function getColorPriority(colorName) {
   
   if (!colorDict.has(colorName))
   {
-    colorDictAddNew();
+    //colorDictAddNew();
   }
   
-  const hsb = colorDict[colorDict];
+  const hsb = colorDict.get(colorName);
 
   // Сдвигаем спектр на 45 грудаусов, чтобы оттенки красного 
   // ниже 360 не считались в более высоком приоритете
@@ -166,8 +163,8 @@ function getColorPriority(colorName) {
 }
 
 function testPriority() {
-  Array(...colorDict).forEach(element => {
-    console.log(`${element[0]} ${getColorPriority(element[1])}`);
+  Array(...colorDict.keys()).forEach(element => {
+    console.log(`${element} ${getColorPriority(element)}`);
   });
 }
 
