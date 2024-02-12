@@ -1,3 +1,28 @@
+// список фруктов в JSON формате
+let fruitsJSON = `[
+  {"kind": "Мангустин", "color": "фиолетовый", "weight": 13},
+  {"kind": "Дуриан", "color": "зеленый", "weight": 35},
+  {"kind": "Личи", "color": "розово-красный", "weight": 17},
+  {"kind": "Карамбола", "color": "желтый", "weight": 28},
+  {"kind": "Тамаринд", "color": "светло-коричневый", "weight": 22}
+]`;
+
+const fruitItemColors = {
+  values: [
+    "fruit_violet",
+    "fruit_green",
+    "fruit_carmazin",
+    "fruit_yellow",
+    "fruit_lightbrown"
+  ],
+  counter: 0,
+  getNext: function(){
+    if (this.counter >= this.values.length) this.counter = 0;
+    return this.values[this.counter++];
+  }
+};
+
+
 // элементы в DOM можно получить при помощи функции querySelector
 const fruitsList = document.querySelector('.fruits__list'); // список карточек
 const shuffleButton = document.querySelector('.shuffle__btn'); // кнопка перемешивания
@@ -11,15 +36,6 @@ const colorInput = document.querySelector('.color__input'); // поле с на�
 const weightInput = document.querySelector('.weight__input'); // поле с весом
 const addActionButton = document.querySelector('.add__action__btn'); // кнопка добавления
 
-// список фруктов в JSON формате
-let fruitsJSON = `[
-  {"kind": "Мангустин", "color": "фиолетовый", "weight": 13},
-  {"kind": "Дуриан", "color": "зеленый", "weight": 35},
-  {"kind": "Личи", "color": "розово-красный", "weight": 17},
-  {"kind": "Карамбола", "color": "желтый", "weight": 28},
-  {"kind": "Тамаринд", "color": "светло-коричневый", "weight": 22}
-]`;
-
 // преобразование JSON в объект JavaScript
 let fruits = JSON.parse(fruitsJSON);
 
@@ -29,15 +45,34 @@ let fruits = JSON.parse(fruitsJSON);
 const display = () => {
   // TODO: очищаем fruitsList от вложенных элементов,
   // чтобы заполнить актуальными данными из fruits
+  if (fruitsList.hasChildNodes)
+    while (fruitsList.firstChild) {
+      fruitsList.removeChild(fruitsList.firstChild);
+    }
 
   for (let i = 0; i < fruits.length; i++) {
-    // TODO: формируем новый элемент <li> при помощи document.createElement,
-    // и добавляем в конец списка fruitsList при помощи document.appendChild
+    const fruitItem = createFruitItem(fruits[i], i);
+    fruitsList.appendChild(fruitItem);
   }
 };
 
-// первая отрисовка карточек
-display();
+// Создание узла-элемента карточки
+function createFruitItem(fruit, index = 0) {
+  let listItem = document.createElement("li");
+  listItem.className = `fruit__item ${fruitItemColors.getNext()}`;
+
+  listItem.innerHTML = `
+    <div class="fruit__info">
+      <div>index: ${index}</div>
+      <div>kind: ${fruit.kind}</div>
+      <div>color: ${fruit.color}</div>
+      <div>weight (кг): ${fruit.weight}</div>
+    </div>
+  `;
+
+  return listItem;
+}
+
 
 /*** ПЕРЕМЕШИВАНИЕ ***/
 
@@ -67,6 +102,9 @@ shuffleButton.addEventListener('click', () => {
   shuffleFruits();
   display();
 });
+
+// Первое отображение 
+display();
 
 /*** ФИЛЬТРАЦИЯ ***/
 
@@ -132,3 +170,5 @@ addActionButton.addEventListener('click', () => {
   // необходимые значения берем из kindInput, colorInput, weightInput
   display();
 });
+
+
