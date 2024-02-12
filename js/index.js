@@ -16,7 +16,7 @@ const fruitItemColors = {
     "fruit_lightbrown"
   ],
   counter: 0,
-  getNext: function(){
+  getNext: function () {
     if (this.counter >= this.values.length) this.counter = 0;
     return this.values[this.counter++];
   }
@@ -73,6 +73,8 @@ function createFruitItem(fruit, index = 0) {
   return listItem;
 }
 
+// Первое отображение 
+display();
 
 /*** ПЕРЕМЕШИВАНИЕ ***/
 
@@ -83,17 +85,17 @@ const getRandomInt = (min, max) => {
 
 // перемешивание массива
 const shuffleFruits = () => {
+  let snapshot = Array(...fruits);
   let result = [];
 
-  // ATTENTION: сейчас при клике вы запустите бесконечный цикл и браузер зависнет
   while (fruits.length > 0) {
-    // TODO: допишите функцию перемешивания массива
-    //
-    // Подсказка: находим случайный элемент из fruits, используя getRandomInt
-    // вырезаем его из fruits и вставляем в result.
-    // ex.: [1, 2, 3], [] => [1, 3], [2] => [3], [2, 1] => [], [2, 1, 3]
-    // (массив fruits будет уменьшатся, а result заполняться)
+    let i = getRandomInt(0, fruits.length - 1);
+    result.push(fruits[i]);
+    fruits.splice(i, 1);
   }
+
+  let isEqual = result.every((value, index) => value === snapshot[index]);
+  if (isEqual) window.alert("Порядок в списке фруктов не изменился.");
 
   fruits = result;
 };
@@ -102,9 +104,6 @@ shuffleButton.addEventListener('click', () => {
   shuffleFruits();
   display();
 });
-
-// Первое отображение 
-display();
 
 /*** ФИЛЬТРАЦИЯ ***/
 
