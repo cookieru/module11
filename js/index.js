@@ -16,7 +16,7 @@ const fruitItemColors = {
     "fruit_lightbrown"
   ],
   counter: 0,
-  getNext: function(){
+  getNext: function () {
     if (this.counter >= this.values.length) this.counter = 0;
     return this.values[this.counter++];
   }
@@ -42,16 +42,15 @@ let fruits = JSON.parse(fruitsJSON);
 /*** ОТОБРАЖЕНИЕ ***/
 
 // отрисовка карточек
-const display = () => {
+const display = (list) => {
   // TODO: очищаем fruitsList от вложенных элементов,
   // чтобы заполнить актуальными данными из fruits
-  if (fruitsList.hasChildNodes)
-    while (fruitsList.firstChild) {
-      fruitsList.removeChild(fruitsList.firstChild);
-    }
+  while (fruitsList.firstChild) {
+    fruitsList.removeChild(fruitsList.firstChild);
+  }
 
-  for (let i = 0; i < fruits.length; i++) {
-    const fruitItem = createFruitItem(fruits[i], i);
+  for (let i = 0; i < list.length; i++) {
+    const fruitItem = createFruitItem(list[i], i);
     fruitsList.appendChild(fruitItem);
   }
 };
@@ -100,11 +99,11 @@ const shuffleFruits = () => {
 
 shuffleButton.addEventListener('click', () => {
   shuffleFruits();
-  display();
+  display(fruits);
 });
 
 // Первое отображение 
-display();
+display(fruits);
 
 /*** ФИЛЬТРАЦИЯ ***/
 
@@ -116,8 +115,8 @@ const filterFruits = () => {
 };
 
 filterButton.addEventListener('click', () => {
-  filterFruits();
-  display();
+  const link = filterFruits();
+  display(link);
 });
 
 /*** СОРТИРОВКА ***/
@@ -125,8 +124,58 @@ filterButton.addEventListener('click', () => {
 let sortKind = 'bubbleSort'; // инициализация состояния вида сортировки
 let sortTime = '-'; // инициализация состояния времени сортировки
 
+const colorDict = new Map([
+  ["красный", { H: 0, S: 100, B: 100 }],
+  ["оранжевый", { H: 45, S: 100, B: 100 }],
+  ["желтый", { H: 68, S: 100, B: 100 }],
+  ["зеленый", { H: 135, S: 100, B: 100 }],
+  ["голубой", { H: 180, S: 100, B: 100 }],
+  ["синий", { H: 225, S: 100, B: 100 }],
+  ["фиолетовый", { H: 270, S: 100, B: 100 }],
+  ["черный", { H: Math.random() * 360, S: Math.random() * 100, B: 0 }],
+  ["белый", { H: Math.random() * 360, S: 0, B: 100 }],
+  ["серый", { H: Math.random() * 360, S: 0, B: 50 }],
+  ["розово-красный", { H: 348, S: 91, B: 86 }]
+]
+)
+
+function getColorPriority(colorName) {
+  
+  if (!colorDict.has(colorName))
+  {
+    colorDictAddNew();
+  }
+  
+  const hsb = colorDict[colorDict];
+
+  // Сдвигаем спектр на 45 грудаусов, чтобы оттенки красного 
+  // ниже 360 не считались в более высоком приоритете
+  let hue = hsb.H + 45 > 360 ? hsb.H - 315 : hsb.H + 45;
+  // Считаем, на сколько нужно повысить приоритет, в зависимости на
+  // сколько процентов цвет белый.
+  let sat = (360 - hue + 180) * ((100 - hsb.S) / 100) ** 2;
+  // Предварительный приоритет
+  let result = 180 + hue + sat;
+  // Считаем, на сколько нужно изменить приоритет, в зависимости на
+  // сколько процентов цвет черный.
+  result = result * (1 - ((100 - hsb.B) / 100) ** 2);
+
+  return Math.round(result);
+}
+
+function testPriority() {
+  Array(...colorDict).forEach(element => {
+    console.log(`${element[0]} ${getColorPriority(element[1])}`);
+  });
+}
+
+testPriority();
+
 const comparationColor = (a, b) => {
   // TODO: допишите функцию сравнения двух элементов по цвету
+  // Будем сортировать цвета по цветам радуги с помощью цветовой модели HSB
+  // при этом постараемя добится чтобы черный цвет был самым низким по значению,
+  // а белый самый высоким
 };
 
 const sortAPI = {
@@ -159,7 +208,7 @@ sortActionButton.addEventListener('click', () => {
   // TODO: вывести в sortTimeLabel значение 'sorting...'
   const sort = sortAPI[sortKind];
   sortAPI.startSort(sort, fruits, comparationColor);
-  display();
+  display(fruitsList);
   // TODO: вывести в sortTimeLabel значение sortTime
 });
 
@@ -168,7 +217,7 @@ sortActionButton.addEventListener('click', () => {
 addActionButton.addEventListener('click', () => {
   // TODO: создание и добавление нового фрукта в массив fruits
   // необходимые значения берем из kindInput, colorInput, weightInput
-  display();
+  display(fruitsList);
 });
 
 
