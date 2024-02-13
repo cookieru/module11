@@ -145,10 +145,10 @@ const colorDict = new Map([
   ["светло-коричневый", { H: 30, S: 69, B: 81 }]
 ]);
 
-function getColorPriority(color) {
+function getColorPriority(color, isHSB = false) {
 
   let hsb;
-  if (("H" in color) && ("S" in color) && ("B" in color)) {
+  if (isHSB) {
     hsb = color
   }
   else {
@@ -190,7 +190,7 @@ function testPriority() {
     }
   }
 
-  const arr2 = arr1.map(item => { return { hsb: item, priority: getColorPriority(item) }; });
+  const arr2 = arr1.map(item => { return { hsb: item, priority: getColorPriority(item, true) }; });
 
   sortAPI.quickSort(arr2, (a, b) => a.priority > b.priority);
 
@@ -219,7 +219,7 @@ const sortAPI = {
 
   quickSort(arr, comparation) {
     const stack = [[0, arr.length - 1]];
-    
+
     const partition = (array, low, high) => {
       const pivot = array[high];
       let i = low - 1;
@@ -282,6 +282,16 @@ sortTimeLabel.textContent = sortTime;
 
 sortChangeButton.addEventListener('click', () => {
   // TODO: переключать значение sortKind между 'bubbleSort' / 'quickSort'
+  switch (sortKind) {
+    case "bubbleSort":
+      sortKind = "quickSort";
+      break;
+    case "quickSort":
+      sortKind = "bubbleSort";
+      break;
+  }
+
+  sortKindLabel.textContent = sortKind;
 });
 
 sortActionButton.addEventListener('click', () => {
