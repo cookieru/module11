@@ -141,55 +141,111 @@ const colorDict = new Map([
   ["черный", { H: Math.random() * 360, S: Math.random() * 100, B: 0 }],
   ["белый", { H: Math.random() * 360, S: 0, B: 100 }],
   ["серый", { H: Math.random() * 360, S: 0, B: 50 }],
-  ["розово-красный", { H: 348, S: 91, B: 86 }]
-]
-)
+  ["розово-красный", { H: 348, S: 91, B: 86 }],
+  ["светло-коричневый", { H: 30, S: 69, B: 81 }]
+]);
 
-function getColorPriority(colorName) {
+function getColorPriority(color) {
 
-  if (!colorDict.has(colorName)) {
-    //colorDictAddNew();
+  let hsb;
+  if (("H" in color) && ("S" in color) && ("B" in color)) {
+    hsb = color
+  }
+  else {
+    if (!colorDict.has(color)) {
+      //colorDictAddNew();
+    }
+
+    hsb = colorDict.get(color);
   }
 
-  const hsb = colorDict.get(colorName);
 
   // Сдвигаем спектр на 45 грудаусов, чтобы оттенки красного 
   // ниже 360 не считались в более высоком приоритете
   let hue = hsb.H + 45 > 360 ? hsb.H - 315 : hsb.H + 45;
+  hue = hue / 360 * 540;
   // Считаем, на сколько нужно повысить приоритет, в зависимости на
   // сколько процентов цвет белый.
-  let sat = (360 - hue + 180) * ((100 - hsb.S) / 100) ** 2;
+  let sat = (540 - hue + 90) * (1 / (hsb.S / 100 + 1)) ** 7;
   // Предварительный приоритет
-  let result = 180 + hue + sat;
+  let result = 90 + hue + sat;
   // Считаем, на сколько нужно изменить приоритет, в зависимости на
   // сколько процентов цвет черный.
-  result = result * (1 - ((100 - hsb.B) / 100) ** 2);
+  result = result * (1 + (hsb.B / 100 - 1) ** 7);
 
   return Math.round(result);
 }
 
 function testPriority() {
-  Array(...colorDict.keys()).forEach(element => {
-    console.log(`${element} ${getColorPriority(element)}`);
-  });
-}
+  //Array(...colorDict.keys()).forEach(element => {
+  //  console.log(`${element} ${getColorPriority(element)}`);
+  //});
 
-//testPriority();
+  const arr1 = [];
+  for (let h = 0; h < 360; h = h + 45) {
+    for (let s = 20; s <= 100; s = s + 20) {
+      for (let b = 20; b <= 100; b = b + 20) {
+        arr1.push({ H: h, S: s, B: b });
+      }
+    }
+  }
+
+  const arr2 = arr1.map(item => { return { hsb: item, priority: getColorPriority(item) }; });
+
+  sortAPI.quickSort(arr2, (a, b) => a.priority > b.priority);
+
+  arr2.forEach((item) => console.log(`hsb(${item.hsb.H},${item.hsb.S},${item.hsb.B})`, item.priority));
+}
 
 const comparationColor = (a, b) => {
   // TODO: допишите функцию сравнения двух элементов по цвету
   // Будем сортировать цвета по цветам радуги с помощью цветовой модели HSB
   // при этом постараемя добится чтобы черный цвет был самым низким по значению,
   // а белый самый высоким
+
+  return getColorPriority(a.color) > getColorPriority(b.color);
 };
 
 const sortAPI = {
   bubbleSort(arr, comparation) {
     // TODO: допишите функцию сортировки пузырьком
+    for (let i = 0; i < arr.length; i++) {
+      for (let j = 0; j < arr.length - 1; j++) {
+        if (comparation(arr[j], arr[j + 1]))
+          [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+      }
+    }
   },
 
   quickSort(arr, comparation) {
-    // TODO: допишите функцию быстрой сортировки
+    const stack = [[0, arr.length - 1]];
+    
+    const partition = (array, low, high) => {
+      const pivot = array[high];
+      let i = low - 1;
+
+      for (let j = low; j < high; j++) {
+        if (!comparation(array[j], pivot)) {
+          i++;
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+      }
+
+      [array[i + 1], array[high]] = [array[high], array[i + 1]];
+
+      return i + 1;
+    }
+
+    while (stack.length > 0) {
+      const [low, high] = stack.pop();
+
+      if (low < high) {
+        const pivotIndex = partition(arr, low, high);
+
+        stack.push([low, pivotIndex - 1]);
+        stack.push([pivotIndex + 1, high]);
+      }
+    }
   },
 
   // выполняет сортировку и производит замер времени
@@ -200,6 +256,25 @@ const sortAPI = {
     sortTime = `${end - start} ms`;
   },
 };
+
+function testSort() {
+  const arr1 = [];
+  for (let i = 0; i < 20; i++) {
+    arr1.push(getRandomInt(1, 100));
+  }
+  console.log(...arr1);
+  sortAPI.bubbleSort(arr1, (a, b) => a > b);
+  console.log(...arr1);
+
+  const arr2 = [];
+  for (let i = 0; i < 20; i++) {
+    arr2.push(getRandomInt(1, 100));
+  }
+  console.log(...arr2);
+  sortAPI.bubbleSort(arr2, (a, b) => a < b);
+  console.log(...arr2);
+}
+//testSort();
 
 // инициализация полей
 sortKindLabel.textContent = sortKind;
@@ -213,7 +288,7 @@ sortActionButton.addEventListener('click', () => {
   // TODO: вывести в sortTimeLabel значение 'sorting...'
   const sort = sortAPI[sortKind];
   sortAPI.startSort(sort, fruits, comparationColor);
-  display(fruitsList);
+  display(fruits);
   // TODO: вывести в sortTimeLabel значение sortTime
 });
 
@@ -222,7 +297,7 @@ sortActionButton.addEventListener('click', () => {
 addActionButton.addEventListener('click', () => {
   // TODO: создание и добавление нового фрукта в массив fruits
   // необходимые значения берем из kindInput, colorInput, weightInput
-  display(fruitsList);
+  display(fruits);
 });
 
-
+//testPriority();
