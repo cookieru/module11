@@ -381,49 +381,53 @@ function colorDictAddNew(colorName) {
   let modelType = "";
   const values = [];
 
-  if (input.slice(0, 1) == "#") {
-    modelType = "rgb";
-    let value = parseInt(input.slice(1, 7), 16);
-    values.push(
-      Math.trunc(value / 65536) % 256,
-      Math.trunc(value / 256) % 256,
-      value % 256
-    );
-  }
-  else if (input.slice(0, 3) == "rgb") {
-    modelType = "rgb";
-    let value = input.slice(
-      input.indexOf("(") + 1,
-      input.indexOf(")")
-    ).split(",", 3);
-
-    values.push(...value.map(item => parseInt(item)));
-  }
-  else if (input.slice(0, 3) == "hsb" || input.slice(0, 3) == "hsv") {
-    modelType = "hsb";
-    let value = input.slice(
-      input.indexOf("(") + 1,
-      input.indexOf(")")
-    ).split(",", 3);
-
-    values.push(...value.map(item => parseInt(item)));
-  }
-
-  if (modelType == "rgb" && values.every(x => ((x >= 0) && (x <= 255)))) {
-    colorDict.set(colorName, rgbToHsb(...values));
-    return;
-  }
-
-  if (modelType == "hsb" && values.reduce((acc, item, index) => {
-    switch (index) {
-      case 0:
-        return (item >= 0 && item <= 360) && acc;
-      default:
-        return (item >= 0 && item <= 100) && acc;
+  try {
+    if (input.slice(0, 1) == "#") {
+      modelType = "rgb";
+      let value = parseInt(input.slice(1, 7), 16);
+      values.push(
+        Math.trunc(value / 65536) % 256,
+        Math.trunc(value / 256) % 256,
+        value % 256
+      );
     }
-  }, true)) {
-    colorDict.set(colorName, { H: values[0], S: values[1], B: values[2] });
-    return;
+    else if (input.slice(0, 3) == "rgb") {
+      modelType = "rgb";
+      let value = input.slice(
+        input.indexOf("(") + 1,
+        input.indexOf(")")
+      ).split(",", 3);
+
+      values.push(...value.map(item => parseInt(item)));
+    }
+    else if (input.slice(0, 3) == "hsb" || input.slice(0, 3) == "hsv") {
+      modelType = "hsb";
+      let value = input.slice(
+        input.indexOf("(") + 1,
+        input.indexOf(")")
+      ).split(",", 3);
+
+      values.push(...value.map(item => parseInt(item)));
+    }
+    if (modelType == "rgb" && values.every(x => ((x >= 0) && (x <= 255)))) {
+      colorDict.set(colorName, rgbToHsb(...values));
+      return;
+    }
+
+    if (modelType == "hsb" && values.reduce((acc, item, index) => {
+      switch (index) {
+        case 0:
+          return (item >= 0 && item <= 360) && acc;
+        default:
+          return (item >= 0 && item <= 100) && acc;
+      }
+    }, true)) {
+      colorDict.set(colorName, { H: values[0], S: values[1], B: values[2] });
+      return;
+    }
+  }
+  catch {
+    console.log("Ошибка преобразования цвета");
   }
 
   window.alert("Не удалось распознать введенное значение. Цвет будет приравнен к черному.")
