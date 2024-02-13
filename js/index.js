@@ -153,7 +153,7 @@ function getColorPriority(color, isHSB = false) {
   }
   else {
     if (!colorDict.has(color)) {
-      //colorDictAddNew();
+      colorDictAddNew(color);
     }
 
     hsb = colorDict.get(color);
@@ -342,10 +342,92 @@ addActionButton.addEventListener('click', () => {
 
   const [_kind, _color] = [kindInput.value, colorInput.value];
 
-  const fruit = {kind: _kind, color: _color, weight: _weight};
+  const fruit = { kind: _kind, color: _color, weight: _weight };
   fruits.push(fruit);
 
   display(fruits);
 });
+
+// Добавление новых цветов
+
+function rgbToHsb(r, g, b) {
+  r /= 255, g /= 255, b /= 255;
+
+  let max = Math.max(r, g, b), min = Math.min(r, g, b);
+  let h, s, v = max;
+
+  let d = max - min;
+
+  s = max === 0 ? 0 : d / max;
+
+  if (max === min) {
+    h = 0;
+  } else {
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+
+  return { H: Math.round(h * 360), S: Math.round(s * 100), B: Math.round(v * 100) };
+}
+
+function colorDictAddNew(colorName) {
+  const input = window.prompt(`Не удалось отсортировать цвет ${colorName}, так как нет цифрового кода цвета.\n` +
+    'Введите код цвета в формате "#RRGGBB" "rgb(RRR,GGG,BBB)" или "hsb(HHH,SSS,BBB)"')
+
+  let modelType = "";
+  const values = [];
+
+  if (input.slice(0, 1) == "#") {
+    modelType = "rgb";
+    let value = parseInt(input.slice(1, 7), 16);
+    values.push(
+      Math.trunc(value / 65536) % 256,
+      Math.trunc(value / 256) % 256,
+      value % 256
+    );
+  }
+  else if (input.slice(0, 3) == "rgb") {
+    modelType = "rgb";
+    let value = input.slice(
+      input.indexOf("(") + 1,
+      input.indexOf(")")
+    ).split(",", 3);
+
+    values.push(...value.map(item => parseInt(item)));
+  }
+  else if (input.slice(0, 3) == "hsb" || input.slice(0, 3) == "hsv") {
+    modelType = "hsb";
+    let value = input.slice(
+      input.indexOf("(") + 1,
+      input.indexOf(")")
+    ).split(",", 3);
+
+    values.push(...value.map(item => parseInt(item)));
+  }
+
+  if (modelType == "rgb" && values.every(x => ((x >= 0) && (x <= 255)))) {
+    colorDict.set(colorName, rgbToHsb(...values));
+    return;
+  }
+
+  if (modelType == "hsb" && values.reduce((acc, item, index) => {
+    switch (index) {
+      case 0:
+        return (item >= 0 && item <= 360) && acc;
+      default:
+        return (item >= 0 && item <= 100) && acc;
+    }
+  }, true)) {
+    colorDict.set(colorName, { H: values[0], S: values[1], B: values[2] });
+    return;
+  }
+
+  window.alert("Не удалось распознать введенное значение. Цвет будет приравнен к черному.")
+  colorDict.set(colorName, { H: 0, S: 0, B: 0 });
+}
 
 //testPriority();
