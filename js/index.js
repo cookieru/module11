@@ -313,6 +313,38 @@ sortActionButton.addEventListener('click', () => {
 addActionButton.addEventListener('click', () => {
   // TODO: создание и добавление нового фрукта в массив fruits
   // необходимые значения берем из kindInput, colorInput, weightInput
+
+  //Валидация
+  for (item of [kindInput, colorInput, weightInput]) {
+    if (item.value.length == 0) {
+      const label = item.previousElementSibling
+      const labelText = label.textContent.slice(0, label.textContent.length - 1);
+      console.log(item);
+      window.alert(`Поле "${labelText}" пустое.`);
+
+      return;
+    }
+  }
+
+  const _weight = parseInt(weightInput.value);
+  if (!_weight) {
+    window.alert(`Поле "weight" должно иметь целочисленое значение.`);
+    return;
+  }
+  else {
+    if (!(_weight >= 0)) {
+      window.alert(`Поле "weight" не может быть меньше нуля.`);
+      return;
+    }
+  }
+
+  // Сохранение
+
+  const [_kind, _color] = [kindInput.value, colorInput.value];
+
+  const fruit = {kind: _kind, color: _color, weight: _weight};
+  fruits.push(fruit);
+
   display(fruits);
 });
 
