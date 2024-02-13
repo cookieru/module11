@@ -254,6 +254,8 @@ const sortAPI = {
     sort(arr, comparation);
     const end = new Date().getTime();
     sortTime = `${end - start} ms`;
+
+    return sortTime;
   },
 };
 
@@ -290,8 +292,10 @@ sortChangeButton.addEventListener('click', () => {
       sortKind = "bubbleSort";
       break;
   }
+  sortTime = "-";
 
   sortKindLabel.textContent = sortKind;
+  sortTimeLabel.textContent = sortTime;
 });
 
 sortActionButton.addEventListener('click', () => {
@@ -299,6 +303,8 @@ sortActionButton.addEventListener('click', () => {
   const sort = sortAPI[sortKind];
   sortAPI.startSort(sort, fruits, comparationColor);
   display(fruits);
+
+  sortTimeLabel.textContent = sortTime;
   // TODO: вывести в sortTimeLabel значение sortTime
 });
 
